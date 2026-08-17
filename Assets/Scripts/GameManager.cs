@@ -53,6 +53,7 @@ public class GameManager : MonoBehaviour
 
     [Tooltip("How quickly breath is restored after releasing the input.")]
     [SerializeField] private float breathRecoveryPerSecond = 80f;
+    [SerializeField] private float breathUnlockThreshold = 50f;
 
     [Header("Input")]
     [SerializeField] private InputMode inputMode = InputMode.NearestMouse;
@@ -80,6 +81,7 @@ public class GameManager : MonoBehaviour
 
     private GameUI gameUI;
 
+    private bool breathLocked;
     private float currentBreath;
     private GameState currentState;
 
@@ -138,6 +140,7 @@ public class GameManager : MonoBehaviour
 
         currentState = GameState.Playing;
         currentBreath = maxBreath;
+        breathLocked = false;
 
         SpawnInitialBubble();
 
@@ -149,6 +152,11 @@ public class GameManager : MonoBehaviour
     public void RestartGame()
     {
         StartGame();
+    }
+
+    public void ExitGame()
+    {
+        Application.Quit();
     }
 
     public void ReturnToMenu()
@@ -174,7 +182,7 @@ public class GameManager : MonoBehaviour
                 bubble.DisablePhysics();
             }
         }
-
+        GameAudio.Instance.PlayLevelComplete();
         gameUI.ShowVictory();
     }
 
@@ -185,6 +193,7 @@ public class GameManager : MonoBehaviour
 
         currentState = GameState.GameOver;
 
+        GameAudio.Instance.PlayGameOver();
         gameUI.ShowGameOver();
     }
 
@@ -194,25 +203,64 @@ public class GameManager : MonoBehaviour
 
     private void UpdateBreath()
     {
-        // Breath is consumed only while actively holding the blow input.
+        // Jika breath terkunci, pemain sedang mengambil napas.
+        if (breathLocked)
+        {
+            // Wajib melepas tombol terlebih dahulu.
+            if (!Input.GetMouseButton(0))
+            {
+                currentBreath += breathRecoveryPerSecond * Time.deltaTime;
+
+                if (currentBreath >= breathUnlockThreshold)
+                {
+                    currentBreath = Mathf.Min(
+                        currentBreath,
+                        maxBreath
+                    );
+
+                    breathLocked = false;
+                }
+            }
+
+            UpdateBreathUI();
+            return;
+        }
+
         if (IsBlowing())
         {
             currentBreath -= breathDrainPerSecond * Time.deltaTime;
+
+            if (currentBreath <= 0f)
+            {
+                currentBreath = 0f;
+                breathLocked = true;
+            }
         }
         else
         {
-            // Recover quickly once the player stops blowing.
             currentBreath += breathRecoveryPerSecond * Time.deltaTime;
         }
 
-        currentBreath = Mathf.Clamp(currentBreath, 0f, maxBreath);
+        currentBreath = Mathf.Clamp(
+            currentBreath,
+            0f,
+            maxBreath
+        );
 
-        if (gameUI != null)
-        {
-            gameUI.UpdateBreath(currentBreath, maxBreath);
-        }
+        UpdateBreathUI();
     }
 
+
+    private void UpdateBreathUI()
+    {
+        if (gameUI != null)
+        {
+            gameUI.UpdateBreath(
+                currentBreath,
+                maxBreath
+            );
+        }
+    }
     private bool IsBlowing()
     {
         return inputMode == InputMode.NearestMouse &&
@@ -243,6 +291,10 @@ public class GameManager : MonoBehaviour
 
     private void HandleNearestMouseInput()
     {
+        // Breath is locked, so the player must wait for it to recover.
+        if (breathLocked)
+            return;
+
         // A quick tap gives one strong upward puff.
         if (Input.GetMouseButtonDown(0))
         {
@@ -267,6 +319,14 @@ public class GameManager : MonoBehaviour
         if (GameVFX.Instance == null)
             return;
 
+        // Breath is locked, so the player must wait for it to recover.
+        if (breathLocked || currentBreath <= 0f)
+        {
+            GameVFX.Instance?.StopBlow();
+            GameAudio.Instance?.StopBubbleBlow();
+            return;
+        }
+
         Camera mainCamera = Camera.main;
 
         if (mainCamera == null)
@@ -280,6 +340,7 @@ public class GameManager : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             GameVFX.Instance.StartBlow(mouseWorldPosition);
+            GameAudio.Instance.PlayBubbleBlow();
         }
 
         if (Input.GetMouseButton(0))
@@ -290,6 +351,7 @@ public class GameManager : MonoBehaviour
         if (Input.GetMouseButtonUp(0))
         {
             GameVFX.Instance.StopBlow();
+            GameAudio.Instance.StopBubbleBlow();
         }
     }
     /// <summary>

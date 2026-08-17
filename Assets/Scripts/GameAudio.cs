@@ -18,6 +18,7 @@ public class GameAudio : MonoBehaviour
 
     [Header("Settings")]
     [SerializeField] private AudioSource sfxSource;
+    [SerializeField] private AudioSource blowAudioSource;
 
     private void Awake()
     {
@@ -55,7 +56,26 @@ public class GameAudio : MonoBehaviour
 
     public void PlayBubbleBlow()
     {
-        PlaySFX(bubbleBlowClip);
+        if (bubbleBlowClip == null || blowAudioSource == null)
+            return;
+
+        if (!blowAudioSource.isPlaying)
+        {
+            blowAudioSource.clip = bubbleBlowClip;
+            blowAudioSource.loop = true;
+            blowAudioSource.Play();
+        }
+    }
+
+    public void StopBubbleBlow()
+    {
+        if (blowAudioSource == null)
+            return;
+
+        if (blowAudioSource.isPlaying)
+        {
+            blowAudioSource.Stop();
+        }
     }
 
     public void PlayLevelComplete()

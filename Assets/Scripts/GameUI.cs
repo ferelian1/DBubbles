@@ -18,12 +18,6 @@ public class GameUI : MonoBehaviour
     [SerializeField] private Slider breathSlider;
     [SerializeField] private TextMeshProUGUI breathText;
     [SerializeField] private TextMeshProUGUI bubbleCountText;
-
-    private void Start()
-    {
-        ShowMainMenu();
-    }
-
     public void ShowMainMenu()
     {
         SetOnlyActive(mainMenuPanel);
