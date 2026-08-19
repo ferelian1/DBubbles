@@ -12,7 +12,6 @@ public class GameManager : MonoBehaviour
 
     public enum GameState
     {
-        MainMenu,
         Playing,
         Victory,
         GameOver
@@ -33,9 +32,6 @@ public class GameManager : MonoBehaviour
         /// </summary>
         GlobalTap
     }
-
-    [Header("Game State")]
-    [SerializeField] private GameState startingState = GameState.MainMenu;
 
     [Header("Bubble Prefabs")]
     [SerializeField] private Bubble largeBubblePrefab;
@@ -80,6 +76,7 @@ public class GameManager : MonoBehaviour
     private readonly HashSet<Bubble> activeBubbles = new();
 
     private GameUI gameUI;
+    private SceneName sceneName;
 
     private bool breathLocked;
     private float currentBreath;
@@ -99,21 +96,12 @@ public class GameManager : MonoBehaviour
         }
 
         Instance = this;
-        gameUI = FindObjectOfType<GameUI>();
+        gameUI = GetComponentInChildren<GameUI>();
     }
 
     private void Start()
     {
-        currentState = startingState;
-
-        if (currentState == GameState.MainMenu)
-        {
-            gameUI.ShowMainMenu();
-        }
-        else
-        {
-            StartGame();
-        }
+        StartGame();
     }
 
     private void Update()
@@ -161,10 +149,7 @@ public class GameManager : MonoBehaviour
 
     public void ReturnToMenu()
     {
-        ResetLevel();
-
-        currentState = GameState.MainMenu;
-        gameUI.ShowMainMenu();
+        SceneChangeManager.Instance.LoadScene(SceneName.MainMenu);
     }
 
     public void Victory()
@@ -182,6 +167,8 @@ public class GameManager : MonoBehaviour
                 bubble.DisablePhysics();
             }
         }
+        GameVFX.Instance?.StopBlow();
+
         GameAudio.Instance.PlayLevelComplete();
         gameUI.ShowVictory();
     }

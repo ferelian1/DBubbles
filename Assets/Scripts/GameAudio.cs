@@ -12,6 +12,7 @@ public class GameAudio : MonoBehaviour
     [Header("Level")]
     [SerializeField] private AudioClip levelCompleteClip;
     [SerializeField] private AudioClip gameOverClip;
+    [SerializeField] private AudioClip starCollectClip;
 
     [Header("UI")]
     [SerializeField] private AudioClip buttonClickClip;
@@ -76,6 +77,10 @@ public class GameAudio : MonoBehaviour
         {
             blowAudioSource.Stop();
         }
+    }
+    public void PlayStarCollect()
+    {
+        PlaySFX(starCollectClip);
     }
 
     public void PlayLevelComplete()

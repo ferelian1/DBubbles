@@ -8,7 +8,6 @@ using TMPro;
 public class GameUI : MonoBehaviour
 {
     [Header("Screens")]
-    [SerializeField] private GameObject mainMenuPanel;
     [SerializeField] private GameObject gameHUDPanel;
     [SerializeField] private GameObject victoryPanel;
     [SerializeField] private GameObject gameOverPanel;
@@ -18,10 +17,6 @@ public class GameUI : MonoBehaviour
     [SerializeField] private Slider breathSlider;
     [SerializeField] private TextMeshProUGUI breathText;
     [SerializeField] private TextMeshProUGUI bubbleCountText;
-    public void ShowMainMenu()
-    {
-        SetOnlyActive(mainMenuPanel);
-    }
 
     public void ShowHUD()
     {
@@ -40,9 +35,6 @@ public class GameUI : MonoBehaviour
 
     private void SetOnlyActive(GameObject target)
     {
-        if (mainMenuPanel != null)
-            mainMenuPanel.SetActive(target == mainMenuPanel);
-
         if (gameHUDPanel != null)
             gameHUDPanel.SetActive(target == gameHUDPanel);
 
@@ -87,6 +79,13 @@ public class GameUI : MonoBehaviour
         if (GameManager.Instance != null)
         {
             GameManager.Instance.StartGame();
+        }
+    }
+    public void OnNextLevelButtonPressed()
+    {
+        if (GameManager.Instance != null)
+        {
+            SceneChangeManager.Instance.LoadNextScene();
         }
     }
 
