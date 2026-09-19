@@ -132,7 +132,7 @@ public class ObstacleSpawner : MonoBehaviour
         while (nextSpawnX < requiredSpawnX)
         {
             SpawnObstacle(nextSpawnX);
-
+            Debug.Log($"Spawned obstacle at x={nextSpawnX}");
             nextSpawnX +=
                 GetCurrentSpacing();
         }
@@ -150,7 +150,8 @@ public class ObstacleSpawner : MonoBehaviour
             Instantiate(
                 prefab,
                 new Vector3(xPosition, 0f, 0f),
-                Quaternion.identity
+                Quaternion.identity,
+                gameObject.transform
             );
 
         spawnedObjects.Add(obstacle);
